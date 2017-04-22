@@ -23,7 +23,7 @@ void ofApp::setup(){
     //common factorsof 640 & 480
     //1, 2, 4, 5, 8, 10, 16, 20, 32, 40, 80, 160
     
-    fbo.allocate(w, h);
+    fbo.allocate(w * 2, h * 2);
     
     fbo.begin();
     ofClear(255, 255);
@@ -53,8 +53,6 @@ void ofApp::update(){
         lastFrameRate = thisFrameRate;
         lastFrameTime = ofGetElapsedTimef();
         
-        //8 bit color = 3 bit red, 3 bit green, 2 bit blue
-        // => 8 levels of red, 8 of green 4 of blue
         fbo.begin();
         
         //draw squares at the pixel size
@@ -67,14 +65,14 @@ void ofApp::update(){
                 c = cam.getPixels().getColor(x + pixelSize/2, y + pixelSize/2);
                 
                 
-                    
+                
                     c.setHsb(c.getHue(), c.getSaturation() * saturationMult, c.getBrightness() * brightnessMult);
-                    
+                
                 if( use8BitColor ){
-                    //R, G and B need to get dropped to different bit depths.
-                    //Get 255 to normalized, mult. by number of values in that
-                    //color range, drop to nearest int, then fake it with
-                    //24 bit color by getting the equivalent 0-255 value for that color
+                    //R, G and B need to get dropped to different bit depths
+                    //8 bit color = 3 bit red, 3 bit green, 2 bit blue
+                    // => 8 levels of red, 8 of green 4 of blue
+                    //Then scale up to a 255 scale to fake it on screen
                     c.r = floor( (c.r/256.0f) * 8 ) * (int)(255/8);
                     c.g = floor( (c.g/256.0f) * 8 ) * (int)(255/8);
                     c.b = floor( (c.b/256.0f) * 4 ) * (int)(255/4);
@@ -82,10 +80,13 @@ void ofApp::update(){
                 }
                 
                 ofSetColor(c);
+                
+                //FBO is twice the size for better resolution output
+                //scale everything by 2
                 if ( !useLegoPixels ){
-                    ofDrawRectangle(x, y, pixelSize, pixelSize);
+                    ofDrawRectangle(x * 2, y * 2, pixelSize * 2, pixelSize * 2);
                 } else {
-                    legoTex.draw(x, y, pixelSize, pixelSize);
+                    legoTex.draw(x * 2, y * 2, pixelSize * 2, pixelSize * 2);
                 }
                 
             }
@@ -125,7 +126,7 @@ void ofApp::draw(){
     cam.draw(leftMargin, topMargin);
     
     ofSetColor(255);
-    fbo.draw(leftMargin + w, topMargin);
+    fbo.draw(leftMargin + w, topMargin, w, h);
     
 
     
